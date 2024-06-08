@@ -163,4 +163,14 @@ const listBook = async(req: Request, res: Response, next: NextFunction) => {
   }
 }
 
-export { createBook, updateBook, listBook };
+const listSingleBook = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const singleBook = await bookModel.findById(req.params.bookId)
+
+    res.json(singleBook)
+  } catch (error) {
+    return next(createHttpError(500, "Error while getting a single book"))
+  }
+}
+
+export { createBook, updateBook, listBook, listSingleBook };
