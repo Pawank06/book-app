@@ -2,9 +2,11 @@ import { NextFunction, Request, Response } from "express";
 import cloudinary from "../config/cludinary";
 import path from "path";
 import createHttpError from "http-errors";
+import bookModel from "./bookModel";
+import fs from "node:fs"
 
 const createBook = async (req: Request, res: Response, next: NextFunction) => {
-  console.log("files", req.files);
+  const {title, genre} = req.body
 
   const files = req.files as { [fieldname: string]: Express.Multer.File[] };
   const coverImageMimeType = files.coverImage[0].mimetype.split("/").at(-1);
@@ -25,8 +27,9 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
     bookFileName
   )
 
+  let bookFileUploadResult;
   try {
-    const bookFileUploadResult = await cloudinary.uploader.upload(bookFilePath,{
+    bookFileUploadResult = await cloudinary.uploader.upload(bookFilePath,{
     resource_type: 'raw',
     filename_override: bookFileName,
     folder: 'book-pdfs',
@@ -44,7 +47,20 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
 
   console.log("upload result", uploadResult)
 
-  res.json({ message: "Welcome" });
+  const newBook = await bookModel.create({
+    title,
+    genre,
+    author: "66641df78c502d46ef0ab25e",
+    coverImage: uploadResult.secure_url,
+    file: bookFileUploadResult.secure_url,
+  })
+
+  //Delete tremp books
+
+  await fs.promises.unlink(filePath)
+  await fs.promises.unlink(bookFilePath)
+
+  res.status(201).json({ id: newBook._id });
 };
 
 export { createBook };
