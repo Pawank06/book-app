@@ -5,13 +5,13 @@ import globalErrorhandler from "./middlewares/globalErrorhandler";
 import userRouter from "./user/userRouter";
 
 const app = express();
+app.use(express.json());
 
 app.get("/", (req, res, next) => {
-  
   res.json({ message: "Welcome" });
 });
 
-app.use('/api/users/', userRouter)
+app.use("/api/users/", userRouter);
 
 // Global error handler
 
